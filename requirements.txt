@@ -1,0 +1,19 @@
+# Pinned runtime dependencies for the oilbn package (MScFE 660 GWP1-3).
+# Generated from the project's .venv (`pip freeze`), matching the
+# `dependencies` list in pyproject.toml. Install with:
+#   pip install -r requirements.txt
+#   pip install -e .
+numpy==2.5.2
+pandas==3.0.6
+scipy==1.18.1
+matplotlib==3.11.2
+seaborn==0.13.2
+scikit-learn==1.9.1
+statsmodels==0.15.0
+networkx==3.7
+pgmpy==1.1.2
+yfinance==1.7.0
+pandas-datareader==0.11.1
+requests==2.34.2
+python-dotenv==1.2.4
+fredapi==0.5.2

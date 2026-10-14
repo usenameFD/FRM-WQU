@@ -1,0 +1,95 @@
+\section{Probabilistic Graphical Models: Belief Networks and Parameter Learning}
+\label{sec:pgm-fundamentals}
+
+\subsection{Belief Networks}
+
+A \emph{belief network} (also called a Bayesian network) represents the joint
+probability distribution of a set of random variables $X_1, \ldots, X_m$ as a
+directed acyclic graph (DAG) $G = \langle V, E \rangle$, where each node
+$v \in V$ corresponds to one variable $X_v$, and each directed edge encodes a
+direct probabilistic dependency. The defining property of this representation
+is that the joint density factorises along the graph structure:
+\[
+  p(x_1, \ldots, x_m) = \prod_{v=1}^{m} p\bigl(x_v \mid \mathrm{pa}(x_v)\bigr),
+\]
+where $\mathrm{pa}(x_v)$ denotes the values taken by the parents of $v$ in
+$G$ (and $p(x_v \mid \mathrm{pa}(x_v)) = p(x_v)$ for a node with no parents).
+This factorisation is what makes belief networks tractable: instead of
+specifying one joint distribution over all $m$ variables jointly, the modeller
+only needs to specify $m$ \emph{local} conditional distributions, one per
+node, each depending only on that node's (typically small) parent set
+\autocite{pearl1988probabilistic,koller2009pgm}.
+
+A standard illustrative example is the "Rain--Sprinkler--Wet Grass" network:
+whether the grass is wet depends on whether it rained and whether the
+sprinkler was on, and both of those, in turn, have their own (unconditional)
+probabilities of occurring. Once the network and its conditional probability
+tables are specified, exact inference lets us answer queries in the reverse
+causal direction — e.g.\ given that we \emph{observe} the grass is wet, what
+is the probability that it rained? — via Bayes' theorem and marginalisation
+over the remaining variables. The same machinery applies, at much larger
+scale, to our 24-variable oil-price panel: observing a change in, say, OPEC
+spare capacity and the US dollar index lets the network update its belief
+about the probability distribution of the oil-price node, without needing a
+separate model for every possible combination of observed evidence.
+
+\subsection{Learning a Belief Network}
+
+Given a dataset of observations but no pre-specified network, learning a
+belief network splits into two distinct sub-problems:
+
+\begin{description}
+  \item[Parameter learning] Given a fixed DAG $G$ that already captures the
+    dependency structure between variables, estimate the conditional
+    probability distribution (CPD) at each node, i.e.\ estimate the
+    parameters $\theta_{v \mid \mathrm{pa}(v)}$ of
+    $p_{v \mid \mathrm{pa}(v)}(x_v; \theta_{v\mid\mathrm{pa}(v)})$.
+  \item[Structure learning] Given only the raw data, estimate the DAG $G$
+    itself, i.e.\ decide which arcs are present, without yet committing to
+    any parameter values. This is covered in
+    Section~\ref{sec:structure-learning}.
+\end{description}
+
+This section focuses on parameter learning. One of the principal practical
+advantages of the graphical representation is that it decomposes one
+high-dimensional estimation problem (the full joint distribution over all
+$m$ variables) into $m$ independent, low-dimensional estimation problems, one
+per node, each conditioned only on that node's parents. This is only
+computationally cheap if the graph is reasonably sparse: the number of free
+parameters at a node grows with the number (and cardinality) of its parents,
+so there is a direct computational incentive to prefer sparser structures —
+a consideration that resurfaces in Section~\ref{sec:structure-learning} when
+scoring candidate structures.
+
+Two standard estimators are used for the CPD parameters at each node:
+
+\begin{description}
+  \item[Maximum Likelihood Estimation (MLE)] The CPD at each node is filled in
+    using the observed relative frequencies of the variable's states (for
+    discrete data), choosing the parameter values that maximise
+    $P(\text{data} \mid \text{model})$. This is simple and consistent, but can
+    behave poorly when some parent-value combinations are rarely or never
+    observed in the sample (a combination with zero observed occurrences
+    receives zero probability, which is often too strong a conclusion to draw
+    from a finite sample).
+  \item[Bayesian Estimation] Rather than starting from an uninformative
+    (empirical-frequency) prior, Bayesian parameter estimation begins from an
+    explicit prior CPD expressing the modeller's belief about the parameters
+    \emph{before} observing the data, and updates it with the observed data
+    via Bayes' rule. This naturally regularises the rare/unseen
+    parent-combination problem that pure MLE struggles with, at the cost of
+    requiring the modeller to choose a (possibly subjective) prior.
+\end{description}
+
+\subsection{Relevance to this Project}
+
+In our oil-price panel, the "variables" that ultimately enter the belief
+network are not the raw, continuous series in
+Table~\ref{tab:data-dictionary}, but \emph{discretised regime labels}
+produced by the Hidden Markov Model stage described in GWP2 (e.g.\
+"WTI: bull/stagnant/bear", "USD index: strengthening/stable/weakening"). Once
+each series has been reduced to a small number of discrete regimes, parameter
+learning reduces to exactly the discrete-CPD estimation problem described
+above, and can be carried out directly with standard tools (e.g.\ \texttt{pgmpy}'s
+maximum-likelihood or Bayesian estimators \autocite{ankan2015pgmpy}) once the
+network structure itself has been learned, as discussed next.

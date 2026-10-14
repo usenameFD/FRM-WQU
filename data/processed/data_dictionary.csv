@@ -1,0 +1,25 @@
+name,category,source,frequency,units,start_date,end_date,description
+brent_futures,financial,Yahoo Finance,daily,n/a,2007-07-30,2026-10-06,Brent crude oil continuous front-month futures price.
+sp500,financial,Yahoo Finance,daily,n/a,1990-01-02,2026-10-05,"S&P 500 equity index, a global risk-sentiment proxy."
+usd_index,financial,Yahoo Finance,daily,n/a,1990-01-01,2026-10-06,ICE U.S. Dollar Index (DXY) spot level.
+ust10y_yield,financial,Yahoo Finance,daily,n/a,1990-01-02,2026-10-05,CBOE 10-year U.S. Treasury note yield.
+wti_futures,financial,Yahoo Finance,daily,n/a,2000-08-23,2026-10-06,WTI crude oil continuous front-month futures price.
+demand_non_oecd,geopolitical,U.S. Energy Information Administration (EIA),monthly,n/a,1990-01-01,2026-10-01,"Liquid fuels consumption, total non-OECD."
+demand_oecd,geopolitical,U.S. Energy Information Administration (EIA),monthly,n/a,1990-01-01,2026-10-01,"Liquid fuels consumption, total OECD."
+non_oecd_stock_change,geopolitical,U.S. Energy Information Administration (EIA),monthly,n/a,2003-02-01,2026-10-01,"Net inventory withdrawals, total non-OECD crude oil and other liquids."
+oecd_inventory_balance,geopolitical,U.S. Energy Information Administration (EIA),monthly,n/a,2003-01-01,2026-10-01,OECD end-of-period commercial crude oil and other liquids inventory (Alvi's 'Balance' variable).
+oecd_stock_change,geopolitical,U.S. Energy Information Administration (EIA),monthly,n/a,2003-02-01,2026-10-01,"Net inventory withdrawals, total other OECD crude oil and other liquids."
+opec_production_capacity,geopolitical,U.S. Energy Information Administration (EIA),monthly,n/a,1990-01-01,2026-10-01,OPEC total crude oil production capacity.
+opec_spare_capacity,geopolitical,U.S. Energy Information Administration (EIA),monthly,n/a,1993-01-01,2026-10-01,OPEC total spare crude oil production capacity.
+supply_non_opec,geopolitical,U.S. Energy Information Administration (EIA),monthly,n/a,1993-01-01,2026-10-01,Total non-OPEC liquids petroleum production (supply side of the oil market outside the OPEC cartel).
+supply_opec,geopolitical,U.S. Energy Information Administration (EIA),monthly,n/a,1993-01-01,2026-10-01,Total OPEC petroleum supply.
+us_crude_production,geopolitical,U.S. Energy Information Administration (EIA),monthly,n/a,1990-01-01,2026-10-01,U.S. crude oil production.
+us_refinery_input,geopolitical,U.S. Energy Information Administration (EIA),monthly,n/a,1990-01-01,2026-10-01,U.S. crude oil refinery input.
+capacity_oil_gas_extraction,macroeconomic,FRED (Federal Reserve Economic Data),monthly,n/a,1972-01-01,2026-08-01,Capacity: Oil and Gas Extraction (NAICS 211).
+capacity_util_oil_gas_extraction,macroeconomic,FRED (Federal Reserve Economic Data),monthly,n/a,1972-01-01,2026-08-01,Capacity utilization: Oil and Gas Extraction.
+cpi_energy,macroeconomic,FRED (Federal Reserve Economic Data),monthly,n/a,1957-01-01,2026-08-01,"US Consumer Price Index: Energy, seasonally adjusted."
+indprod_crude_petroleum_ng,macroeconomic,FRED (Federal Reserve Economic Data),monthly,n/a,1972-01-01,2021-04-01,Industrial production: Crude Petroleum and Natural Gas Extraction.
+indprod_oil_gas_extraction,macroeconomic,FRED (Federal Reserve Economic Data),monthly,n/a,1972-01-01,2026-08-01,Industrial production: Oil and Gas Extraction.
+indprod_oil_gas_support,macroeconomic,FRED (Federal Reserve Economic Data),monthly,n/a,1972-01-01,2026-08-01,Industrial production: Support Activities for Oil and Gas Operations.
+indprod_total,macroeconomic,FRED (Federal Reserve Economic Data),monthly,n/a,1919-01-01,2026-08-01,"Total industrial production index (US, all industries)."
+ppi_oil_gas_extraction,macroeconomic,FRED (Federal Reserve Economic Data),monthly,n/a,1985-12-01,2026-08-01,Producer Price Index: Oil and Gas Extraction (NAICS 211).

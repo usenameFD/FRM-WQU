@@ -1,0 +1,98 @@
+\section{The Inferred Causality Algorithm}
+\label{sec:inferred-causality}
+
+As introduced in Section~\ref{sec:structure-learning}, every constraint-based
+structure-learning algorithm shares a common three-phase skeleton: learn each
+node's Markov blanket, use it to identify the undirected skeleton of the
+graph, and finally orient the remaining arcs. \textbf{Inferred Causality} is
+the canonical algorithm of this family
+\autocite{pellet2008markov,alvi2018pgm}. Below is our own pseudocode
+rendering of the algorithm, written from our understanding of its three
+phases rather than reproduced from any single source, followed by a short
+walk-through of why each phase is structured the way it is.
+
+\begin{algorithm}[h]
+\caption{Inferred Causality (our rendering, after Pellet \& Elisseeff (2008) and Alvi (2018))}
+\label{alg:inferred-causality}
+\begin{algorithmic}[1]
+\Require Dataset $D$ over variables $X_1, \ldots, X_m$
+\Ensure A partially directed acyclic graph $G$ over $X_1, \ldots, X_m$
+
+\Statex \textbf{Phase 1 --- Learn Markov blankets}
+\For{each variable $X_i$}
+  \State Estimate its Markov blanket $B(X_i)$ from $D$ (e.g.\ via an
+         independence-test-based feature-selection search).
+\EndFor
+\For{each pair $(X_i, X_j)$}
+  \If{$X_i \in B(X_j)$ \textbf{xor} $X_j \in B(X_i)$}
+    \State Discard the asymmetric membership as a false positive, so that
+           $B(\cdot)$ is made symmetric: $X_i \in B(X_j) \Leftrightarrow
+           X_j \in B(X_i)$.
+  \EndIf
+\EndFor
+
+\Statex \textbf{Phase 2 --- Learn the undirected skeleton}
+\For{each pair $(X_i, X_j)$, $i \neq j$}
+  \State Search for a conditioning set $S_{ij} \subseteq V \setminus \{X_i, X_j\}$
+         such that $X_i \perp\!\!\!\perp X_j \mid S_{ij}$. \textbf{If} $B(X_i)$
+         and $B(X_j)$ are already known from Phase 1, restrict the search to
+         subsets of the smaller of $B(X_i) \setminus \{X_j\}$ and
+         $B(X_j) \setminus \{X_i\}$ (the Markov-blanket pruning that makes
+         this phase tractable).
+  \If{no such $S_{ij}$ is found}
+    \State Place an undirected arc $X_i - X_j$ in the skeleton.
+  \EndIf
+\EndFor
+\State Re-symmetrise the resulting neighbour sets $N(X_i)$ exactly as in
+       Phase 1, discarding asymmetric neighbour relations.
+
+\Statex \textbf{Phase 3 --- Orient the arcs}
+\For{each pair of \emph{non-adjacent} variables $X_i, X_j$ with a common
+     neighbour $X_k \notin S_{ij}$}
+  \State Orient both arcs away from $X_k$: set
+         $X_i \to X_k \leftarrow X_j$ (a \emph{v-structure} / collider).
+\EndFor
+\Repeat
+  \If{$X_i - X_j$ is still undirected and a strictly directed path already
+      exists from $X_i$ to $X_j$}
+    \State Orient $X_i \to X_j$ (orienting it the other way would create a
+           directed cycle).
+  \EndIf
+  \If{$X_i, X_j$ are non-adjacent, $X_i \to X_k$, and $X_k - X_j$ is still
+      undirected}
+    \State Orient $X_k \to X_j$ (otherwise $X_i \to X_k \leftarrow X_j$ would
+           become an unintended second v-structure at $X_k$).
+  \EndIf
+\Until{no further arc can be oriented}
+\State \Return the resulting partially directed acyclic graph $G$.
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Discussion}
+
+The structure of Algorithm~\ref{alg:inferred-causality} is best understood as
+successive narrowing of the search space. Phase 1 uses the Markov blanket's
+defining property (Section~\ref{sec:markov-chain-blanket}) purely as a
+pruning device: instead of testing every one of the $2^{m-2}$ possible
+conditioning sets for every pair of variables, Phase 2 only has to search
+within each node's own (already small) Markov blanket. The symmetry checks in
+both Phase 1 and Phase 2 exist because the independence tests used to
+estimate $B(X_i)$ are statistical, not exact, so sample noise can produce
+$X_i \in B(X_j)$ without the reverse holding; treating such asymmetries as
+false positives trades a small amount of recall for a large improvement in
+precision. Phase 3 then exploits a different structural fact: once the
+skeleton is fixed, only the v-structures (colliders) are
+identifiable from conditional-independence information alone, since they are
+the only local configuration where the Markov-blanket's conditional
+independencies pin down a unique orientation; every other arc is oriented
+only indirectly, by propagating the acyclicity constraint from the
+already-oriented v-structures.
+
+For our oil-price panel, we treat this algorithm as a cross-check on the
+score-based Hill-Climbing search (Section~\ref{sec:structure-learning}) that
+we use as our primary structure-learning tool in GWP2: because Inferred
+Causality and Hill-Climbing make different assumptions (local
+conditional-independence tests vs.\ a global, parameter-penalised score), arcs
+recovered by \emph{both} methods are a stronger signal of a genuine
+dependency in the underlying oil market than an arc recovered by either
+method alone.

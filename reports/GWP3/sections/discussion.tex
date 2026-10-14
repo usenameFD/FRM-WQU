@@ -1,0 +1,78 @@
+\section{Discussion: What This Means for an Investment Decision}
+\label{sec:discussion}
+
+This section is written for a reader who needs to decide whether to act
+on this project's output, not for a reader who needs to audit its
+mathematics.
+
+\subsection{What the model actually tells you}
+
+The headline finding of this project is simple: a computer program,
+given only historical prices and a handful of publicly available
+industry statistics -- and given \emph{no} instruction about which of
+those statistics matter -- consistently figures out on its own that
+crude-oil price swings are tied most closely to \emph{physical,
+industrial} activity (how much the oil-and-gas-support sector of the
+economy is growing or shrinking) and to the \emph{other} major
+benchmark crude price (Brent), and only loosely, if at all, to broad
+financial-market sentiment (the stock market, the dollar, bond yields).
+That is a genuinely useful piece of information for anyone trying to
+understand \emph{why} oil prices move, independent of whether the model
+can also tell you \emph{which direction} they will move next.
+
+\subsection{What the model does not (yet) tell you}
+
+Separately, and just as important: when we asked the same model to make
+a concrete, one-month-ahead call on whether oil would be in a rising,
+falling, or flat period, it was right about 7 times out of 10 -- but
+simply assuming "next month looks like this month" was right closer to
+9 times out of 10. In plain terms: on this test, the model's
+market-timing signal was not yet good enough to act on by itself. This
+is a common and important finding in quantitative investing more
+generally -- many signals that look statistically interesting
+completely fail to beat the simplest possible comparison (just assuming
+things stay the same), and the discipline of checking against that
+simple comparison, rather than skipping straight to "the model found
+something", is exactly what separates a credible research process from
+an overconfident one.
+
+\subsection{What we would recommend to a decision-maker}
+
+\begin{itemize}
+  \item \textbf{Use the model's structural finding as a monitoring
+    tool, not a trading signal.} Knowing that industrial activity and
+    the Brent benchmark are the variables to watch is actionable today,
+    at no risk: it tells a risk manager or a policy analyst \emph{where}
+    to focus limited attention, even without trusting the model's
+    specific price-direction calls.
+  \item \textbf{Do not allocate real capital based on the current
+    forecast alone.} A trading or hedging decision sized directly off
+    this model's monthly regime call would, on the evidence gathered
+    here, likely underperform the much simpler rule of just assuming
+    "no change." Before any capital is put behind this specific
+    forecast, it would need to clear the same bar in a longer,
+    independent test period, and ideally be combined with other signals
+    rather than used alone.
+  \item \textbf{The portfolio-tilting demonstration (Section
+    \ref{sec:results}) illustrates a mechanism, not a recommendation.}
+    We showed that a confident model view \emph{can} be translated into
+    a concrete portfolio tilt (shifting an equal-weighted position
+    toward oil when the model is bullish). That machinery is sound and
+    reusable, but plugging in today's specific, not-yet-validated
+    forecast would be putting a mechanism ahead of the evidence that
+    mechanism should be fed by.
+  \item \textbf{Cost-effectiveness.} Every input used by this project
+    (Yahoo Finance prices, FRED and EIA public statistics) is free and
+    automatically refreshable, and the entire pipeline runs in minutes
+    on an ordinary laptop. The honest 70\%-vs-88\% comparison above cost
+    nothing extra to produce and should be considered a required,
+    essentially free quality check before any such model is trusted with
+    a real decision -- there is no excuse, cost-wise, for skipping it.
+\end{itemize}
+
+In short: this project demonstrates a transparent, inexpensive, and
+genuinely interpretable way to monitor what is driving the oil market,
+and a clean mechanism for turning a model view into a portfolio
+decision -- but it also demonstrates, honestly, that the specific
+market-timing signal produced by this particular model, on this
+particular sample, is not yet strong enough to deploy on its own.

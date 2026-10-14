@@ -1,0 +1,3 @@
+Cleaned, "sterilized" datasets produced by `oilbn.data.cleaners`. Tracked in
+git (small CSVs only) so the notebooks are reproducible without re-querying
+external APIs.

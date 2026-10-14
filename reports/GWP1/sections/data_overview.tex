@@ -1,0 +1,95 @@
+\section{Data}
+\label{sec:data}
+
+\subsection{Data Sourcing}
+
+Following Alvi's design (\S3.1 of \autocite{alvi2018pgm}), the candidate
+variable set is split into three groups, each pulled via a single-purpose
+loader class in \texttt{oilbn.data.loaders} (a shared
+\texttt{BaseDataLoader} abstract interface, with one concrete subclass per
+source):
+
+\begin{itemize}
+  \item \textbf{Financial (5 series).} Daily closes from Yahoo Finance via
+    \texttt{yfinance}: WTI and Brent continuous front-month futures, the ICE
+    US Dollar Index, the S\&P 500, and the 10-year US Treasury yield.
+  \item \textbf{Macroeconomic (8 series).} Monthly series from the Federal
+    Reserve Economic Data (FRED) API, matching Alvi's Table 3.2 exactly:
+    energy CPI, oil \& gas extraction capacity and capacity utilisation,
+    three industrial-production indices (oil \& gas extraction, crude
+    petroleum \& natural gas, and oil \& gas support activities), total
+    industrial production, and the oil \& gas extraction producer price
+    index.
+  \item \textbf{Geopolitical / physical-market (11 series).} Monthly Short-Term
+    Energy Outlook (STEO) series from the EIA Open Data v2 API, matching 11
+    of the 14 series in Alvi's Table 3.1 (OPEC/non-OPEC supply, OECD/non-OECD
+    demand, US production and refinery input, OPEC spare/production
+    capacity, and OECD/non-OECD stock changes). The remaining 3 of Alvi's 14
+    series (\texttt{STEO.RGDPQ\_NONOECD.M}, \texttt{STEO.RGDPQ\_OECD.M},
+    \texttt{STEO.FOREX\_WORLD.M}) return no data against the current STEO
+    vintage and have been retired or renamed since 2018; rather than guess a
+    replacement series ID, we omit them and document the omission here
+    explicitly.
+\end{itemize}
+
+Every \texttt{SeriesSpec} in the resulting 24-series catalogue
+(\texttt{oilbn.data.catalog.GWP1\_CATALOG}) is resolved to the correct
+loader and fetched in one orchestrated pass
+(\texttt{collect\_catalog}), with per-series failures logged and skipped
+rather than aborting the whole run. One data-quality nuance specific to the
+EIA STEO series is worth flagging explicitly: each pull includes roughly a
+year of the EIA's own forward-looking \emph{forecast} beyond the present day,
+which was truncated before any exploratory or stylised-facts analysis so
+that only \emph{realised} history is analysed. The resulting data dictionary
+is given in Table~\ref{tab:data-dictionary}.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\input{tables/data_dictionary.tex}
+\endgroup
+
+\subsection{Data Cleaning}
+\label{sec:data-cleaning}
+
+Every series in the catalogue is passed through the same three-stage
+\texttt{DataCleaningPipeline} (\texttt{oilbn.data.cleaners}), mirroring three
+distinct cleaning responsibilities:
+
+\begin{enumerate}
+  \item \textbf{Bad data.} Non-monotonic or duplicated timestamps, and
+    economically impossible non-positive values, are treated as errors and
+    set to missing. One deliberate exception is built in: the OECD and
+    non-OECD inventory \emph{stock-change} series are genuinely
+    \emph{signed} flow variables (a negative value denotes a net stock
+    \emph{build}, not an error), so the non-positive check is disabled for
+    those two series only.
+  \item \textbf{Extreme outliers.} A robust, median-absolute-deviation
+    (MAD) based modified $z$-score flags (but does not remove) observations
+    with $|z| > 3.5$, so genuine price shocks remain visible in the
+    sterilised series while still being documented.
+  \item \textbf{Missing values.} Slow-moving macroeconomic/geopolitical
+    series are imputed by linear interpolation (appropriate given their
+    short, infrequent gaps); the daily financial series instead use a
+    volatility-matched Brownian-bridge simulation between the surrounding
+    observed values, which avoids injecting artificial flatness into a price
+    series across a longer gap (e.g.\ a data-vendor outage spanning several
+    trading days).
+\end{enumerate}
+
+Across all 24 series, this pipeline logged 52 cleaning actions in total; the
+full, auto-generated narrative is reproduced below.
+
+\input{sections/cleaning_narrative.tex}
+
+One specific finding is worth flagging on its own merits rather than leaving
+implicit in the narrative above: the raw WTI futures feed contains exactly
+one non-positive observation, corresponding to the historic 20 April 2020
+episode when the expiring WTI contract briefly traded at a negative price as
+storage capacity was exhausted and long holders could not take delivery. Our
+general-purpose bad-data rule (\emph{any} non-positive price is an error) is
+a defensible default for a panel of 24 heterogeneous series, but it has the
+side effect of treating this genuine, famous market event identically to a
+data error and imputing it away. We flag this transparently here, and again
+in Section~\ref{sec:stylized-facts}, rather than silently losing the
+observation.

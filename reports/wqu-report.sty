@@ -1,0 +1,54 @@
+% wqu-report.sty — shared preamble for the MScFE 660 GWP1-3 reports.
+% Usage: each report's main.tex does \usepackage{../wqu-report} and then
+% \maketitlepage{...} + \input{sections/...}.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{wqu-report}[2024/01/01 WQU MScFE 660 report style]
+
+\RequirePackage[margin=1in]{geometry}
+\RequirePackage{graphicx}
+\RequirePackage{float}
+\RequirePackage{booktabs}
+\RequirePackage{longtable}
+\RequirePackage{array}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{caption}
+\RequirePackage{subcaption}
+\RequirePackage{xcolor}
+\RequirePackage{fancyhdr}
+\RequirePackage{setspace}
+\RequirePackage{enumitem}
+\RequirePackage{algorithm}
+\RequirePackage{algpseudocodex}
+\RequirePackage{pdfpages}
+\RequirePackage[backend=bibtex,style=mla]{biblatex}
+\RequirePackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\onehalfspacing
+\setlength{\parskip}{0.5\baselineskip}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\small\leftmark}
+\fancyhead[R]{\small\thepage}
+
+% --- Title page -------------------------------------------------------
+% \maketitlepage{GWP number}{Report title}{Course}{Team members (comma list)}{Date}
+\newcommand{\maketitlepage}[5]{%
+  \begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+    {\Large WorldQuant University}\\[0.3cm]
+    {\large MScFE 660 Risk Management}\\[1.5cm]
+    {\huge\bfseries Group Work Project #1}\\[0.5cm]
+    {\Large #2}\\[2cm]
+    {\large\itshape #3}\\[2cm]
+    {\large Team members:}\\
+    {\large #4}\\[2cm]
+    {\large #5}
+    \vfill
+  \end{titlepage}
+}
+
+\endinput

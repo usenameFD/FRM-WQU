@@ -1,0 +1,2 @@
+This directory holds raw data pulls (gitignored). Populated by running the
+GWP1 notebook, which calls the loaders in `oilbn.data.loaders`.

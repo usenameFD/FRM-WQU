@@ -1,0 +1,102 @@
+\section{Critical Assessment of Alvi's Claimed Contributions}
+\label{sec:alvi-critique}
+
+Alvi's dissertation (Chapter 5, Conclusions \& Future Work)
+\autocite{alvi2018pgm} closes with eight claimed contributions. Each is
+assessed below against what this project was actually able to replicate
+and observe first-hand, not merely against the original text's own
+framing.
+
+\begin{enumerate}
+  \item \textbf{Replacing EGARCH-M-derived views with Bayesian-model-
+    derived views for Black-Litterman.} \emph{Achieved, and now
+    demonstrated end-to-end in Section~\ref{sec:results} of this
+    report.} Alvi's own dissertation proposes this substitution as
+    future work rather than implementing it; our
+    \texttt{BlackLittermanAllocator} demonstration is, to our knowledge,
+    a working instantiation of exactly this idea. It matters because it
+    replaces a purely statistical volatility-forecasting input (EGARCH-M)
+    with a structurally-interpretable, auditable one (a Bayesian
+    network's posterior), directly addressing the "black box" objection
+    a risk committee would reasonably raise against a pure time-series
+    model.
+  \item \textbf{Using HMM-discretized time series as inputs to belief
+    networks is novel.} \emph{Partially achieved and independently
+    confirmed useful, but "novel" is an overclaim.} We independently
+    re-derived the same two-stage design (regime-detect, then learn
+    structure over the discretized regimes) without reference to Alvi's
+    implementation details, and found it necessary for the same reason
+    Alvi likely did: a belief network cannot consume continuous,
+    non-stationary price levels directly. However, combining HMM
+    state-decoding with downstream structure learning predates this
+    2018 dissertation in the broader regime-switching literature; the
+    genuine contribution is the specific \emph{application} to crude oil
+    risk management, not the general technique.
+  \item \textbf{A working, directly-deployable trading mechanism capable
+    of independent decision-making.} \emph{Not achieved, by our own
+    replication.} Section~\ref{sec:results}'s honest finding --
+    69.7\% one-month-ahead regime accuracy, below the 87.9\%
+    naive-persistence baseline -- directly contradicts "deployable"; a
+    mechanism that underperforms the trivial baseline cannot be handed
+    an independent capital-allocation mandate without a human overseeing
+    it. This matters because it is exactly the kind of overclaim a risk
+    manager must be trained to catch before signing off on a model.
+  \item \textbf{Structure-learning-based, so near-autonomous and
+    requiring no prior expert knowledge beyond dataset selection.}
+    \emph{Achieved, with one caveat.} Our Hill-Climbing pipeline requires
+    no manually-specified edges, confirming this claim; the one
+    qualification is that \emph{dataset selection itself} is not a
+    trivial, expert-knowledge-free step -- deciding to discretize
+    financial series via regime-detection but macro/geopolitical series
+    via simple terciles (Section 4 of the GWP2 report) is itself a
+    domain judgement call that materially shapes what the algorithm can
+    possibly discover.
+  \item \textit{(Duplicate of contribution 2 in the source text,
+    verbatim -- not independently assessed.)}
+  \item \textbf{Python PGM libraries' abstraction level aided theoretical
+    understanding of the design process.} \emph{Achieved, and we concur
+    directly.} Implementing the four HMM algorithms from scratch (GWP2)
+    while using \texttt{pgmpy}'s higher-level Hill-Climbing/BIC/CPD
+    abstractions for the belief-network side gave us the same
+    pedagogical contrast Alvi describes: writing Baum-Welch by hand
+    forces an understanding of \emph{why} EM must be used (Section
+    "Hidden Markov Models: A Latent-Variable-Model Definition" of the
+    GWP2 report), while \texttt{pgmpy}'s \texttt{HillClimbSearch} lets
+    attention shift to interpreting the \emph{result} (edge economic
+    plausibility, Markov blanket contents) rather than the search
+    mechanics.
+  \item \textbf{Provides forecasts via a systematic, event-driven
+    global-macro strategy with higher-return potential than
+    hedge-fund/fixed-income strategies.} \emph{Not supported by our
+    replication.} This is the single most over-reaching claim in the
+    list: no backtested, cost-adjusted return series is presented
+    anywhere in the original dissertation to substantiate a
+    hedge-fund-beating return claim, and our own forecast-accuracy
+    result (Section~\ref{sec:results}) actively argues against treating
+    the model's regime calls as a standalone systematic strategy without
+    further validation.
+  \item \textbf{Helps energy policy makers understand oil-market
+    structure to draft better policy.} \emph{Plausibly achieved, and
+    the strongest-surviving claim in our view.} Regardless of the
+    model's forecast accuracy, the \emph{structure} it recovers --
+    which variables belong in \texttt{wti\_regime}'s Markov blanket, and
+    which do not -- is itself informative to a policy audience: our
+    replication across three different samples consistently finds that
+    an industrial-production indicator and the Brent benchmark, not
+    pure financial-market variables, are the proximate drivers of the
+    WTI regime. A policymaker monitoring physical-market indicators
+    rather than financial-market sentiment to anticipate oil-price
+    regime shifts is a defensible, model-structure-derived
+    recommendation that does not depend on the forecast-accuracy
+    shortfall documented above.
+\end{enumerate}
+
+In summary, this project's replication supports Alvi's \emph{structural}
+claims (contributions 1, 2, 4, 6, 8) considerably more than his
+\emph{performance} claims (contributions 3 and 7): the belief-network
+machinery reliably recovers an interpretable, economically plausible,
+and reasonably stable causal structure without expert input, but the
+resulting model's one-month-ahead forecast accuracy does not, on this
+replication, clear the bar of a naive persistence baseline -- a result
+future work (and genuine commercial deployment) would need to address
+directly rather than assume away.

@@ -8,8 +8,7 @@ assuming the structure in advance. The search space is enormous — for $n$
 variables there are $n(n-1)/2$ possible undirected edges and therefore up to
 $2^{n(n-1)/2}$ candidate structures — so an exhaustive search is computationally
 infeasible beyond a handful of variables, and the literature instead relies
-on two broad families of approximate algorithm: \emph{constraint-based} and
-\emph{score-based} learning.
+on two broad families of approximate algorithm: constraint-based and score-based learning.
 
 \subsection{Constraint-Based Learning}
 
@@ -17,20 +16,20 @@ Constraint-based algorithms use statistical conditional-independence tests
 (e.g.\ Pearson's $\chi^2$ test for categorical data, or Fisher's $Z$-test for
 Gaussian data) to directly determine which arcs belong in the graph, rather
 than optimising a global score. Every constraint-based algorithm shares the
-same three-phase structure, illustrated by the \emph{Inferred Causality}
-algorithm described in Section~\ref{sec:inferred-causality}: (1) learn each
-node's Markov blanket to prune the candidate structure early; (2) use the
-reduced candidate set to identify which \emph{undirected} arcs (the
-"skeleton") are present; and (3) orient the remaining undirected arcs into a
-final, partially-directed acyclic graph. The appeal of this family is that it
-directly tests the conditional-independence relationships that a DAG is
-meant to represent, and the Markov-blanket pruning step (Section
-\ref{sec:markov-chain-blanket}) gives a substantial computational saving over
-testing every possible subset of variables. Its main weakness is sensitivity
-to the statistical independence tests themselves: with a finite, noisy sample
-(as in our 24-variable panel, where some EIA series only begin in 2003),
-individual test errors can propagate into structural errors that are hard to
-correct downstream.
+same three-phase structure, illustrated by the Inferred Causality algorithm described in Section~\ref{sec:inferred-causality}: 
+
+\begin{itemize}
+	\item learn each
+	node's Markov blanket to prune the candidate structure early;
+	\item use the reduced candidate set to identify which undirected arcs (the "skeleton") are present
+	\item orient the remaining undirected arcs into a
+	final, partially-directed acyclic graph.
+\end{itemize}
+
+The appeal of this family is that it directly tests the conditional-independence relationships that a DAG is
+meant to represent, and the Markov-blanket pruning step (Section \ref{sec:markov-chain-blanket}) gives a substantial computational saving over testing every possible subset of variables. Its main weakness is sensitivity
+to the statistical independence tests themselves: with a finite, noisy sample (as in our 24-variable panel, where some EIA series only begin in 2003),
+individual test errors can propagate into structural errors that are hard to correct downstream.
 
 \subsection{Score-Based Learning}
 
@@ -66,11 +65,10 @@ whichever neighbouring structure most improves the score. The procedure
 halts when no single-edge change improves the score further. Hill Climbing
 is greedy and therefore has no guarantee of finding the globally optimal
 structure; it can settle at a local maximum depending on its starting point.
-Standard mitigations include a \emph{tabu list} of recently-visited
-structures (to discourage immediately undoing the last move) and
-\emph{random restarts} from a different starting structure.
+Standard mitigations include a tabu list of recently-visited
+structures (to discourage immediately undoing the last move) and random restarts from a different starting structure.
 
-\subsection{Trade-offs and Relevance to this Project}
+\subsection{Trade-offs and Relevance}
 
 Constraint-based and score-based learning make different trade-offs: the
 former directly tests the conditional-independence structure the DAG is
@@ -79,12 +77,8 @@ the latter avoids relying on any single statistical test by instead
 optimising a global, sample-size-aware score, at the cost of only finding a
 local optimum via a greedy search. For this project, we use
 \texttt{pgmpy}'s \texttt{HillClimbSearch} with a BIC score as the primary
-score-based structure-learning tool in GWP2, since it scales comfortably to
-our panel size, requires no manual tuning of independence-test thresholds,
-and its score explicitly trades off fit against the number of free
-parameters — a desirable property given how many of our 24 series are
+score-based structure-learning tool, since it scales comfortably to our panel size, requires no manual tuning of independence-test thresholds, and its score explicitly trades off fit against the number of free parameters — a desirable property given how many of our 24 series are
 themselves strongly collinear (Figure~\ref{fig:correlation-heatmap}), which
 would otherwise encourage a constraint-based test to retain spurious edges.
-We separately implement the constraint-based Inferred Causality algorithm
-by hand in Section~\ref{sec:inferred-causality}, both as a pedagogical
+We separately implement the constraint-based Inferred Causality algorithm by hand in Section~\ref{sec:inferred-causality}, both as a pedagogical
 exercise and as a cross-check on the Hill-Climbing result.

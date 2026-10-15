@@ -3,15 +3,10 @@
 
 \subsection{Data Sourcing}
 
-Following Alvi's design (\S3.1 of \autocite{alvi2018pgm}), the candidate
-variable set is split into three groups, each pulled via a single-purpose
-loader class in \texttt{oilbn.data.loaders} (a shared
-\texttt{BaseDataLoader} abstract interface, with one concrete subclass per
-source):
+Following Alvi's design (\S3.1 of \autocite{alvi2018pgm}), the candidate variable set is split into three groups:
 
 \begin{itemize}
-  \item \textbf{Financial (5 series).} Daily closes from Yahoo Finance via
-    \texttt{yfinance}: WTI and Brent continuous front-month futures, the ICE
+  \item \textbf{Financial (5 series).} Daily closes from Yahoo Finance: WTI and Brent continuous front-month futures, the ICE
     US Dollar Index, the S\&P 500, and the 10-year US Treasury yield.
   \item \textbf{Macroeconomic (8 series).} Monthly series from the Federal
     Reserve Economic Data (FRED) API, matching Alvi's Table 3.2 exactly:
@@ -32,16 +27,7 @@ source):
     explicitly.
 \end{itemize}
 
-Every \texttt{SeriesSpec} in the resulting 24-series catalogue
-(\texttt{oilbn.data.catalog.GWP1\_CATALOG}) is resolved to the correct
-loader and fetched in one orchestrated pass
-(\texttt{collect\_catalog}), with per-series failures logged and skipped
-rather than aborting the whole run. One data-quality nuance specific to the
-EIA STEO series is worth flagging explicitly: each pull includes roughly a
-year of the EIA's own forward-looking \emph{forecast} beyond the present day,
-which was truncated before any exploratory or stylised-facts analysis so
-that only \emph{realised} history is analysed. The resulting data dictionary
-is given in Table~\ref{tab:data-dictionary}.
+One data-quality nuance specific to the EIA STEO series is worth flagging explicitly: each pull includes roughly a year of the EIA's own forward-looking forecast beyond the present day, which was truncated before any exploratory or stylised-facts analysis so that only realised history is analysed. The resulting data dictionary is given in Table~\ref{tab:data-dictionary}.
 
 \begingroup
 \small
@@ -52,9 +38,7 @@ is given in Table~\ref{tab:data-dictionary}.
 \subsection{Data Cleaning}
 \label{sec:data-cleaning}
 
-Every series in the catalogue is passed through the same three-stage
-\texttt{DataCleaningPipeline} (\texttt{oilbn.data.cleaners}), mirroring three
-distinct cleaning responsibilities:
+Every series is passed through the same three-stage:
 
 \begin{enumerate}
   \item \textbf{Bad data.} Non-monotonic or duplicated timestamps, and
@@ -77,19 +61,6 @@ distinct cleaning responsibilities:
     trading days).
 \end{enumerate}
 
-Across all 24 series, this pipeline logged 52 cleaning actions in total; the
-full, auto-generated narrative is reproduced below.
-
-\input{sections/cleaning_narrative.tex}
-
-One specific finding is worth flagging on its own merits rather than leaving
-implicit in the narrative above: the raw WTI futures feed contains exactly
-one non-positive observation, corresponding to the historic 20 April 2020
-episode when the expiring WTI contract briefly traded at a negative price as
-storage capacity was exhausted and long holders could not take delivery. Our
-general-purpose bad-data rule (\emph{any} non-positive price is an error) is
-a defensible default for a panel of 24 heterogeneous series, but it has the
-side effect of treating this genuine, famous market event identically to a
-data error and imputing it away. We flag this transparently here, and again
-in Section~\ref{sec:stylized-facts}, rather than silently losing the
-observation.
+One specific finding is worth flagging on its own merits rather than leaving implicit in the narrative above: the raw WTI futures feed contains exactly one non-positive observation, corresponding to the historic 20 April 2020
+episode when the expiring WTI contract briefly traded at a negative price as storage capacity was exhausted and long holders could not take delivery. Our general-purpose bad-data rule (non-positive price is an error) is
+a defensible default for a panel of 24 heterogeneous series, but it has the side effect of treating this genuine, famous market event identically to a data error and imputing it away. We flag this transparently here, and again in Section~\ref{sec:stylized-facts}, rather than silently losing the observation.

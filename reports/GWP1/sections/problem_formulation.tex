@@ -7,34 +7,22 @@ Crude oil is simultaneously a physical commodity, a financial asset, and a
 geopolitical bargaining chip, and its price reflects the interaction of all
 three. A single, static statistical model that assumes one fixed relationship
 between oil prices and a handful of macroeconomic drivers struggles to cope
-with this environment: the \emph{relevant} set of drivers and the
-\emph{strength} of their relationships both change over time as the market
+with this environment: the relevant set of drivers and the strength of their relationships both change over time as the market
 moves between demand-driven, supply-driven, and purely speculative/financial
 regimes \autocite{kilian2009oil,hamilton2009causes}. A risk manager who prices
 energy exposure, hedges an oil-linked book, or sets capital against commodity
-risk therefore faces two compounding problems: (i) identifying \emph{which}
-set of financial, macroeconomic, and physical-market variables is actually
+risk therefore faces two compounding problems: (i) identifying which set of financial, macroeconomic, and physical-market variables is actually
 driving the price at a given point in time, out of a large and only loosely
 related candidate set, and (ii) doing so in a way that is transparent enough
-to audit, rather than a black box.
+to audit.
 
-This project follows the framing used by Alvi \autocite{alvi2018pgm}: treat
-crude oil price forecasting as a problem of \emph{structure discovery} over a
-mixed panel of financial, macroeconomic, and geopolitical/physical-market
-series, rather than a problem of fitting one fixed regression equation. Given
-$m$ candidate variables $X_1, \ldots, X_m$ (our data dictionary in
-Table~\ref{tab:data-dictionary} lists 24: 5 financial, 8 macroeconomic, and 11
-geopolitical/physical-market series sourced from Yahoo Finance, FRED, and the
-EIA Short-Term Energy Outlook respectively), the task is to learn both
-\emph{which} variables are conditionally dependent on which others, and the
-\emph{strength and direction} of those dependencies, directly from the data.
+This project follows the framing used \cite{alvi2018pgm}: treat crude oil price forecasting as a problem of structure discovery over a mixed panel of financial, macroeconomic, and geopolitical/physical-market series, rather than a problem of fitting one fixed regression equation. Given
+$m$ candidate variables $X_1, \ldots, X_m$ (our data dictionary in Table~\ref{tab:data-dictionary} lists 24: 5 financial, 8 macroeconomic, and 11 geopolitical/physical-market series sourced from Yahoo Finance, FRED, and the EIA Short-Term Energy Outlook respectively), the task is to learn both which variables are conditionally dependent on which others, and the strength and direction of those dependencies, directly from the data.
 
 \subsection{Why Probabilistic Graphical Models Fit}
 
 A Bayesian (belief) network represents the joint distribution of
-$X_1, \ldots, X_m$ as a directed acyclic graph (DAG) in which each node's
-distribution is conditioned only on its direct parents, factorising the joint
-density as
+$X_1, \ldots, X_m$ as a directed acyclic graph (DAG) in which each node's distribution is conditioned only on its direct parents, factorising the joint density as
 \[
   p(x_1, \ldots, x_m) = \prod_{v=1}^{m} p\bigl(x_v \mid \mathrm{pa}(x_v)\bigr).
 \]
@@ -48,7 +36,7 @@ reasons.
     series derived from the same underlying balance identity — see the
     correlation heatmap in Figure~\ref{fig:correlation-heatmap}). A naive
     linear model regressing price on all 24 variables would be dominated by
-    multicollinearity. A belief network instead asks \emph{which} variables
+    multicollinearity. A belief network instead asks which variables
     remain informative about the price once its other direct causes are
     already known, which is exactly the conditional-independence structure a
     DAG is built to represent.
@@ -75,7 +63,7 @@ Relative to the two most natural alternatives for this problem, probabilistic
 graphical models offer specific, concrete advantages for our use case:
 
 \begin{itemize}
-  \item \textbf{Vs.\ a single multivariate linear regression / VAR.} A linear
+  \item \textbf{Compared to a single multivariate linear regression / VAR.} A linear
     model assumes one fixed functional form and one fixed set of
     "significant" regressors for the entire sample. Our stylized-facts
     analysis (Section~\ref{sec:stylized-facts}) shows that oil returns are
@@ -83,34 +71,11 @@ graphical models offer specific, concrete advantages for our use case:
     cross-variable relationships are themselves unstable over time (the
     63-day rolling correlation between WTI and the US dollar index swings
     repeatedly between $-1$ and $+1$ across the sample, Figure
-    \ref{fig:rolling-corr}) — a single fixed linear structure cannot
-    represent a relationship whose sign itself is time-varying, whereas a
-    belief network's structure can be re-learned regime by regime (the
-    purpose of the regime-detection step in GWP2).
-  \item \textbf{Vs.\ an unconstrained machine-learning model (e.g.\ gradient
-    boosting, a neural network).} Such models can achieve strong in-sample
-    fit but provide little insight into \emph{why} a forecast changed, which
-    is unacceptable for risk-management sign-off. A belief network's
-    DAG is a directly interpretable artifact: every arc corresponds to a
-    specific, testable conditional dependence, and the Markov blanket of the
-    price node (Section~\ref{sec:markov-chain-blanket}) tells the risk
-    manager, in one step, the minimal set of variables that need to be
-    monitored to screen the price node off from everything else in the
-    system.
-  \item \textbf{Combinability with regime-switching dynamics.} Because a
-    belief network only encodes a static joint distribution, it is naturally
-    paired with a Hidden Markov Model that first discretises each time series
-    into a small number of latent regimes (bull/bear/stagnant), and then
-    learns one belief network over the discretised states. This two-stage
-    design — carried out in GWP2 — lets the slowly-changing physical/macro
-    variables and the fast-changing financial variables be represented on a
-    common, comparable footing without forcing either side into an
-    unnatural functional form.
+    \ref{fig:rolling-corr}) — a single fixed linear structure cannot represent a relationship whose sign itself is time-varying, whereas a belief network's structure can be re-learned regime by regime.
+  \item \textbf{Compared to an unconstrained machine-learning model (e.g.\ gradient boosting, a neural network).} Such models can achieve strong in-sample fit but provide little insight into why a forecast changed, which is unacceptable for risk-management sign-off. A belief network's DAG is a directly interpretable artifact: every arc corresponds to a specific, testable conditional dependence, and the Markov blanket of the price node (Section~\ref{sec:markov-chain-blanket}) tells the risk manager, in one step, the minimal set of variables that need to be monitored to screen the price node off from everything else in the system.
+  \item \textbf{Combinability with regime-switching dynamics.} Because a belief network only encodes a static joint distribution, it is naturally paired with a Hidden Markov Model that first discretises each time series into a small number of latent regimes (bull/bear/stagnant), and then learns one belief network over the discretised states. 
 \end{itemize}
 
-In summary, the core modelling choice of this project — a belief network over
-a mixed financial/macroeconomic/geopolitical panel, informed by a preceding
-regime-detection step — is chosen specifically because it matches the
-structural features we observe in the data (Section~\ref{sec:stylized-facts}):
+In summary, the core modelling choice of this project — a belief network over a mixed financial/macroeconomic/geopolitical panel, informed by a preceding regime-detection step — is chosen specifically because it matches the structural features we observe in the data (Section~\ref{sec:stylized-facts}):
 non-Normal, regime-dependent returns; an unstable and large set of candidate
 drivers; and a need for an auditable, rather than opaque, decision process.
